@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import RoleRequirements from "./Requirements"
+import { Guild, Role } from "../types"
 
 const UserDataComponent = ({ apiUrl }) => {
   const [displayName, setDisplayName] = React.useState('');
@@ -11,6 +13,7 @@ const UserDataComponent = ({ apiUrl }) => {
           throw new Error('Failed to fetch user data');
         }
         const userData = await response.json();
+        console.log(userData);
         const userDisplayName = userData.result.user.displayName;
         setDisplayName(userDisplayName);
       } catch (error) {
@@ -30,11 +33,40 @@ const UserDataComponent = ({ apiUrl }) => {
 };
 
 const UserDataFetcher = () => {
+  
+  const [data, setData] = useState(null)
+  const [isLoading, setLoading] = useState(true)
+  const isOpen = true;
+  const isExpanded = true;
+  const descriptionRef = useRef<HTMLDivElement>(null)
+  const initialRequirementsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    fetch('https://api.guild.xyz/v2/guilds/guild-page/thecreators')
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data)
+        setLoading(false)
+      })
+  }, [])
+ 
+  if (isLoading) return <p>Loading...</p>
+  if (!data) return <p>No profile data</p>
+  
+  const role: Role = (data as Guild).roles[14];
+
   return (
     <>
-      <UserDataComponent apiUrl="https://api.neynar.com/v1/farcaster/user/?api_key=NEYNAR_API_DOCS&viewerFid=-1&fid=410846" />
-      <UserDataComponent apiUrl="https://api.neynar.com/v1/farcaster/user/?api_key=NEYNAR_API_DOCS&viewerFid=-1&fid=436966" />
-      <UserDataComponent apiUrl="https://api.neynar.com/v1/farcaster/user/?api_key=NEYNAR_API_DOCS&viewerFid=-1&fid=408268" />
+      <RoleRequirements
+        {...{
+          data,
+          isOpen,
+          isExpanded,
+          undefined,
+          descriptionRef,
+          initialRequirementsRef,
+        }}
+      />
     </>
   );
 };
